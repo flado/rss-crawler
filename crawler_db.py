@@ -4,9 +4,6 @@ import sys, traceback
 from mysql.connector import errorcode
 from crawler_config import *
 
-CRAWLER_DB_NAME = 'crawlerdb' 
-CRAWLER_DB_USER_NAME = 'crawler' 
-CRAWLER_DB_USER_PWD = '1qa2ws'
 
 log = logging.getLogger('rss_crawler')
 
@@ -48,14 +45,7 @@ def run_in_transaction(func, cnx, *args):
 # get maildb connection
 ##########################
 def get_crawlerdb_connection():
-    db_config = { 
-    'user': CRAWLER_DB_USER_NAME, 
-    'password': CRAWLER_DB_USER_PWD, 
-    'host': '127.0.0.1', 
-    'database': CRAWLER_DB_NAME, 
-    'raise_on_warnings': True, 
-    }
-    cnx = mysql.connector.connect(**db_config) 
+    cnx = mysql.connector.connect(**CRAWLER_DB_CONFIG) 
     return cnx
 
 
@@ -96,7 +86,7 @@ def removeTodo(url, cursor, reason):
 ####################################################
 # add url to a table if does not exists already (feeds, bad_feeds, crawled, todo)
 #####################################################
-def addURL(url, table, cursor, reason=''):
+def addURL(url, table, cursor, reason='', lang=''):
   # print 'addURL: ', url, ' table=', table, ' reason=', reason
 
   if not urlExists(url, table, cursor):
@@ -106,6 +96,9 @@ def addURL(url, table, cursor, reason=''):
     elif table == 'crawled':
       sql = "INSERT INTO {}(url, hash, status) VALUES(%s, MD5(%s), %s)".format(table)
       cursor.execute(sql, (url, url, reason))
+    elif table == 'feeds':
+      sql = "INSERT INTO {}(url, lang, hash) VALUES(%s, %s, MD5(%s))".format(table)
+      cursor.execute(sql, (url, lang, url))
     else:
       sql = "INSERT INTO {}(url, hash) VALUES(%s, MD5(%s))".format(table)
       cursor.execute(sql, (url, url))
@@ -140,8 +133,8 @@ def create_database(cnx):
   def _create_db(): 
     try: 
       cursor.execute( 
-        "CREATE DATABASE IF NOT EXISTS {}  DEFAULT CHARACTER SET 'utf8'".format(CRAWLER_DB_NAME))      
-      log.info("OK: create database '{}'".format(CRAWLER_DB_NAME))
+        "CREATE DATABASE IF NOT EXISTS {}  DEFAULT CHARACTER SET 'utf8'".format(CRAWLER_DB_CONFIG['database']))      
+      log.info("OK: create database '{}'".format(CRAWLER_DB_CONFIG['database']))
     except mysql.connector.Error as err: 
           if (err.errno != 1007): # 1007: Can't create database ; database exists 
             log.error("ERROR: Failed creating database: {}".format(err), exc_info=True) 
@@ -152,10 +145,10 @@ def create_database(cnx):
   def _create_db_user(): 
     try: 
       cursor.execute( 
-        "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON {}.* TO '{}'@'localhost' IDENTIFIED by '{}'".format(CRAWLER_DB_NAME, CRAWLER_DB_USER_NAME, CRAWLER_DB_USER_PWD)) 
+        "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON {}.* TO '{}'@'localhost' IDENTIFIED by '{}'".format(CRAWLER_DB_CONFIG['database'], CRAWLER_DB_CONFIG['user'], CRAWLER_DB_CONFIG['password'])) 
       cursor.execute( 
-        "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON {}.* TO '{}'@'%' IDENTIFIED by '{}'".format(CRAWLER_DB_NAME, CRAWLER_DB_USER_NAME, CRAWLER_DB_USER_PWD)) 
-      log.info("OK: create database user '{}'".format(CRAWLER_DB_USER_NAME) )
+        "GRANT SELECT,INSERT,UPDATE,DELETE,CREATE,DROP ON {}.* TO '{}'@'%' IDENTIFIED by '{}'".format(CRAWLER_DB_CONFIG['database'], CRAWLER_DB_CONFIG['user'], CRAWLER_DB_CONFIG['password'])) 
+      log.info("OK: create database user '{}'".format(CRAWLER_DB_CONFIG['user']) )
     except mysql.connector.Error as err: 
       log.error("ERROR: Failed creating user: {}".format(err), exc_info=True) 
       #traceback.print_exc(file=sys.stdout)
@@ -174,14 +167,14 @@ def create_database(cnx):
 
   ##################################################  
   # check if database exists 
-  cursor.execute("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{}'".format(CRAWLER_DB_NAME)) 
+  cursor.execute("SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME = '{}'".format(CRAWLER_DB_CONFIG['database'])) 
   if cursor.fetchone(): 
     if GLOBAL_CONFIG['drop_existing_database']:
-      cursor.execute("DROP DATABASE {}".format(CRAWLER_DB_NAME)) 
-      log.info("OK: drop database '{}'".format(CRAWLER_DB_NAME))
+      cursor.execute("DROP DATABASE {}".format(CRAWLER_DB_CONFIG['database'])) 
+      log.info("OK: drop database '{}'".format(CRAWLER_DB_CONFIG['database']))
       _setup_all()
     else:
-      log.warning("MySQL database '{}' aready exists! Existing database tables will be used for crawling!".format(CRAWLER_DB_NAME))            
+      log.warning("MySQL database '{}' aready exists! Existing database tables will be used for crawling!".format(CRAWLER_DB_CONFIG['database']))            
 
   else: #database does not exist
     _setup_all()
@@ -220,7 +213,8 @@ def create_database_tables(cnx):
   TABLES['feeds'] = ( 
     "CREATE TABLE `feeds` (" 
       "  `pkid` bigint unsigned NOT NULL AUTO_INCREMENT," 
-      "  `url` varchar(3000) NOT NULL,"   
+      "  `url` varchar(3000) NOT NULL,"
+      "  `lang` varchar(50)," 
       "  `hash` varchar(32) NOT NULL,"   
       "  PRIMARY KEY (`pkid`)," 
       "  UNIQUE KEY `hash` (`hash`)" 
@@ -266,7 +260,7 @@ def create_database_tables(cnx):
 def prepare_database():
   log.debug('prepare_database')
 
-  cnx = mysql.connector.connect(**DB_CONFIG) 
+  cnx = mysql.connector.connect(**ROOT_DB_CONFIG) 
   run_in_transaction(create_database, cnx)    
   cnx.close()  
     

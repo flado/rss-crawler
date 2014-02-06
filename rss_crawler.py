@@ -2,7 +2,7 @@ import sys, traceback, getopt
 import logging
 from bs4 import BeautifulSoup  
 from urlparse import urlparse
-import requests
+import requests, feedparser
 import crawler_db
 from crawler_config import *
 	
@@ -62,7 +62,27 @@ def init_todo(cnx):
 		crawler_db.addURL(url.encode('utf-8'), 'todo', cursor)
 	cursor.close()
 
+######################
+# check if RSS url is valid
+######################
+def validateRSS(theLink):
+	response = { 'valid' : True, 'language' : '' }
+	if not badRSS(theLink):
+		# use RSS reader and see if any items available
+		d = feedparser.parse(theLink)
 
+		if 'language' in d['feed']:
+			response['language'] = d['feed']['language']
+
+		if (len(d.entries) == 0):
+			response['valid'] = False
+			response['reason'] = 'missing entries'
+	else:		
+		response['reason'] = 'BAD RSS - invalid keywords in URL'
+		response['valid'] = False
+	return response
+
+	
 #######################################
 # find RSS feeds  
 #######################################
@@ -102,7 +122,7 @@ def crawl_feeds(cnx):
 			else:
 				# check if each feed is HTTP OK
 				for lnk in rss_links:
-					if not link.has_attr('href'):
+					if not lnk.has_attr('href'):
 						continue;
 					theLink = buildURL(lnk['href'], url)	
 					if not crawler_db.urlExists(theLink, 'crawled', cursor) and not crawler_db.urlExists(theLink, 'bad_feeds', cursor) and not crawler_db.urlExists(theLink, 'feeds', cursor): #check if it's a brand NEW feed
@@ -110,20 +130,25 @@ def crawl_feeds(cnx):
 							resp = requests.get(theLink)
 							if (resp.status_code == 200):
 								if ('xml' in  resp.headers['content-type']):
-									log.info('	RSS OK @ ' + theLink + ':' + str(resp.status_code)) #, ' --> FINAL URL: ', resp.url
-									crawler_db.addURL(theLink, 'feeds', cursor)									
+									v = validateRSS(theLink)									
+									if v['valid']:
+										log.info('	RSS OK @ ' + theLink + ' : ' + str(resp.status_code) + ' --> FINAL URL: ' + resp.url)
+										crawler_db.addURL(theLink, 'feeds', cursor, '', v['language'])
+									else:
+										log.info('	RSS INVALID: ' + v['reason'] + ' @ ' + theLink + ' : ' + str(resp.status_code) + ' --> FINAL URL: ' + resp.url)
+										crawler_db.addURL(theLink, 'bad_feeds', cursor, 'RSS not valid:' + v['reason'])									
 								else:
-									reason = '	RSS ERROR @' + theLink + ' ==> BAD ContentType:' + resp.headers['content-type']
+									reason = '	RSS ERROR @' + theLink + ' ==> BAD ContentType: ' + resp.headers['content-type']
 									log.info(reason)
-									crawler_db.addURL(theLink, 'bad_feeds', cursor, reason)
+									crawler_db.addURL(theLink, 'bad_feeds', cursor, 'BAD ContentType: ' + resp.headers['content-type'])
 							else:	
-								reason = '	RSS ERROR @' + theLink + ':' + str(resp.status_code)
+								reason = '	RSS HTTP ERROR @' + theLink + ' : ' + str(resp.status_code)
 								log.info(reason)
-								crawler_db.addURL(theLink, 'bad_feeds', cursor, reason)
+								crawler_db.addURL(theLink, 'bad_feeds', cursor, 'HTTP ERROR: ' + str(resp.status_code))
 						except Exception as ex:
 							reason = '	### Unexpected ERROR ###' + str(ex) + " from LINK: " + theLink 
 							log.error(reason, exc_info=True) #traceback.print_exc(file=sys.stdout)
-							crawler_db.addURL(theLink, 'bad_feeds', cursor, reason)
+							crawler_db.addURL(theLink, 'bad_feeds', cursor, 'Unexpected ERROR: ' + str(ex))
 					else:
 						reason = '	WARN: RSS duplicate or bad feed:' + theLink
 						log.warning(reason)
@@ -146,7 +171,7 @@ def crawl_feeds(cnx):
 # print short help message
 #####################
 def print_usage():
-	print 'Usage: rss_crawler.py -s,--start \'http://www.start-here.com\' -d,--drop -c,--console -p,--pwd mysql-root-password'
+	print 'Usage: rss_crawler.py -s,--start \'http://www.start-here.com\' -r,--remove -c,--console -p,--pwd mysql-root-password -d, --db crawler-db-name'
 	sys.exit()	
 
 
@@ -156,8 +181,8 @@ def print_usage():
 if __name__ == "__main__":
 	argv = sys.argv[1:]
 	try:	
-		opts, args = getopt.getopt(argv,"hs:dcp:",["start=","drop","console","pwd="])
-		if len(opts) > 5:
+		opts, args = getopt.getopt(argv,"hs:rcp:d:",["start=","remove","console","pwd=","db="])
+		if len(opts) > 6:
 			print_usage()
 	except getopt.GetoptError:
 		traceback.print_exc(file=sys.stdout)
@@ -168,16 +193,18 @@ if __name__ == "__main__":
 			print_usage()
 		elif opt in ("-s", "--start"):
 			# override START url with link provided		
-			GLOBAL_CONFIG['start_urls'] = [ arg ]					
-		elif opt in ("-d", "--drop"):
+			GLOBAL_CONFIG['start_urls'] = [ arg ]	
+		elif opt in ("-d", "--db"): # new crawler db name
+			CRAWLER_DB_CONFIG['database'] = arg					
+		elif opt in ("-r", "--remove"): # crawler db will be dropped and recreated again
 			GLOBAL_CONFIG['drop_existing_database'] = True
-		elif opt in ("-c", "--console"):
+		elif opt in ("-c", "--console"): # print log to console
 			GLOBAL_CONFIG['log_to_file'] = False	
-		elif opt in ("-p", "--pwd"):
+		elif opt in ("-p", "--pwd"): # db root password ('none' for no password)
 			if arg == 'none':
-				DB_CONFIG.pop('password')
+				ROOT_DB_CONFIG.pop('password')
 			else:
-				DB_CONFIG['password'] = arg
+				ROOT_DB_CONFIG['password'] = arg
 	#logging setup:  %(name)s => logger name, %(module)s => module name
 	# If you want each run to start afresh, not remembering the messages from earlier runs, you can specify the 'filemode' argument
 	if GLOBAL_CONFIG['log_to_file']:
