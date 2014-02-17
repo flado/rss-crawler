@@ -1,6 +1,6 @@
 import sys, traceback, getopt
 import logging
-from bs4 import BeautifulSoup  
+from bs4 import BeautifulSoup, SoupStrainer 
 from urlparse import urlparse
 import requests, feedparser
 import crawler_db
@@ -100,15 +100,15 @@ def crawl_feeds(cnx):
 			
 			try:
 				resp = requests.get(url)
-				if (resp.status_code == 200) and ('html' in resp.headers['content-type']):					
-						soup = BeautifulSoup(resp.text)
-						# rss_links = soup.select('link[type="application/rss+xml"]')
-						rss_links = soup.find_all('link', type='application/rss+xml') 
+				if (resp.status_code == 200) and ('html' in resp.headers['content-type']):											
+						link_tag = SoupStrainer('link', {'type': 'application/rss+xml'})
+						rss_links = BeautifulSoup(resp.text, parse_only=link_tag)
 						if (len(rss_links) > 0):
 							log.info('	>> Found {} RSS links on page: {}'.format(len(rss_links), url))
-						
+											 
+						a_tags = BeautifulSoup(resp.text, parse_only=SoupStrainer('a')) 
 						# add other links from this page in todo 	
-						for link in soup.find_all('a'):
+						for link in a_tags:
 							if link.has_attr('href'):
 								addToDoURL(link['href'], url, cursor)	
 				else:
