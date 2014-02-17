@@ -7,10 +7,10 @@ GLOBAL_CONFIG = {
 
 MAX_PAGES_PER_DOMAIN = 6 # maxim number of pages per domain to be fetched for parsing
 
-EXCLUDES = [ 'google.com', 'facebook.com', 'youtube.com', 'twitter.com', 'rsvp.com', 'doubleclick.net', 'ebay.com' ]
+EXCLUDES = [ 'google.com', 'facebook.com', 'youtube.com', 'twitter.com', 'rsvp.com', 'doubleclick.net', 'ebay.com', 'chemspider.com' ]
 
 #exclude RSS URLs that contains the words in this list
-RSS_EXCLUDES = [ '/comment', 'porn' ]
+RSS_EXCLUDES = [ 'comment', 'porn', 'chemspider' ]
 
 BAD_SUFIXES = ['.pdf', '.doc', '.docx', '.rtf', 
 '.mov', '.mp4', '.avi', '.wmv', '.wma', '.asf', '.qt', '.mkv', '.mpeg',
