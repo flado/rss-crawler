@@ -99,7 +99,7 @@ def crawl_feeds(cnx):
 			rss_links = []
 			
 			try:
-				resp = requests.get(url)
+				resp = requests.get(url, timeout=5) # give up if no response after 5 seconds
 				if (resp.status_code == 200) and ('html' in resp.headers['content-type']):											
 						link_tag = SoupStrainer('link', {'type': 'application/rss+xml'})
 						rss_links = BeautifulSoup(resp.text, parse_only=link_tag)
