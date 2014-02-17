@@ -115,8 +115,8 @@ def crawl_feeds(cnx):
 					reason = 'HTTP GET: ' + url + ' --> status_code:' + str(resp.status_code) + " --> Content-Type:" + resp.headers['content-type']
 					log.error(reason)
 					crawler_db.removeTodo(url, cursor, reason)					
-			except Exception, e:
-				reason = 'Unexpected ERROR:' + str(e) + " from URL: "+ url						
+			except Exception, e:				
+				reason = '{0} --> Arguments: {1!r}'.format(type(e).__name__, e.args) # + str(e) + " --> from URL: "+ url						
 				log.error(reason, exc_info=True)  # traceback.print_exc(file=sys.stdout)
 				crawler_db.removeTodo(url, cursor, reason)				
 			else:
@@ -146,7 +146,8 @@ def crawl_feeds(cnx):
 								log.info(reason)
 								crawler_db.addURL(theLink, 'bad_feeds', cursor, 'HTTP ERROR: ' + str(resp.status_code))
 						except Exception as ex:
-							reason = '	### Unexpected ERROR ###' + str(ex) + " from LINK: " + theLink 
+							#reason = '	### Unexpected ERROR ###' + str(ex) + " from LINK: " + theLink 
+							reason = ' from LINK: {0} => {1} -> Arguments: {2!r}'.format(theLink, type(e).__name__, e.args)
 							log.error(reason, exc_info=True) #traceback.print_exc(file=sys.stdout)
 							crawler_db.addURL(theLink, 'bad_feeds', cursor, 'Unexpected ERROR: ' + str(ex))
 					else:

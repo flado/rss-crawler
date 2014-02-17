@@ -92,9 +92,11 @@ def addURL(url, table, cursor, reason='', lang=''):
   if not urlExists(url, table, cursor):
     if table =='bad_feeds':
       sql = "INSERT INTO {}(url, hash, reason) VALUES(%s, MD5(%s), %s)".format(table)
+      reason = reason[:1000] # truncate message if > 1000 characters
       cursor.execute(sql, (url, url, reason))
     elif table == 'crawled':
       sql = "INSERT INTO {}(url, hash, status) VALUES(%s, MD5(%s), %s)".format(table)
+      reason = reason[:1000] # truncate message if > 1000 characters
       cursor.execute(sql, (url, url, reason))
     elif table == 'feeds':
       sql = "INSERT INTO {}(url, lang, hash) VALUES(%s, %s, MD5(%s))".format(table)
