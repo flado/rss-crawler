@@ -145,11 +145,10 @@ def crawl_feeds(cnx):
 								reason = '	RSS HTTP ERROR @' + theLink + ' : ' + str(resp.status_code)
 								log.info(reason)
 								crawler_db.addURL(theLink, 'bad_feeds', cursor, 'HTTP ERROR: ' + str(resp.status_code))
-						except Exception as ex:
-							#reason = '	### Unexpected ERROR ###' + str(ex) + " from LINK: " + theLink 
+						except Exception as e:
 							reason = ' from LINK: {0} => {1} -> Arguments: {2!r}'.format(theLink, type(e).__name__, e.args)
 							log.error(reason, exc_info=True) #traceback.print_exc(file=sys.stdout)
-							crawler_db.addURL(theLink, 'bad_feeds', cursor, 'Unexpected ERROR: ' + str(ex))
+							crawler_db.addURL(theLink, 'bad_feeds', cursor, reason)
 					else:
 						reason = '	WARN: RSS duplicate or bad feed:' + theLink
 						log.warning(reason)
