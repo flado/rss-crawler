@@ -5,6 +5,66 @@ GLOBAL_CONFIG = {
 	'log_to_file' : True	
 }
 
+
+LOG_SETTINGS = {
+    'version': 1,
+    # 'disable_existing_loggers': True,
+    # 'root': {
+    #     'handlers': ['file'],
+    #     'level': 'ERROR',
+    # },
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'default': {
+            'format' : '%(asctime)s : %(levelname)s - %(message)s',
+            'datefmt' : '%m/%d/%Y %I:%M:%S %p'
+        }
+        # 'detailed': {
+        #     'format': '%(asctime)s %(module)-17s line:%(lineno)-4d ' \
+        #     '%(levelname)-8s %(message)s',
+        # },
+        # 'email': {
+        #     'format': 'Timestamp: %(asctime)s\nModule: %(module)s\n' \
+        #     'Line: %(lineno)d\nMessage: %(message)s',
+        # },
+    },  
+    'handlers': {    
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'default'
+        },
+        'file':{
+            'class': 'logging.handlers.RotatingFileHandler',
+            'level': 'DEBUG',
+            'formatter': 'default',
+            'filename': 'crawler.log',
+            'encoding': 'utf8',
+            'mode': 'a',
+            'maxBytes': 5242880, # 5MB
+            'backupCount': 5
+        }
+        #  'smtp': {
+        #     'class': 'logging.handlers.SMTPHandler',
+        #     'level': 'ERROR',
+        #     'formatter': 'email',
+        #     'mailhost': 'localhost',
+        #     'fromaddr': 'alerts@0pii.com',
+        #     'toaddrs': ['crawler@0pii.com', 'admin@0pii.com'],
+        #     'subject': '[RSS Crawler] Error encountered.',
+        # },        
+    },
+
+    'loggers': {       
+        'rss_crawler': {
+            'handlers': ['file'], # log to file by default
+            'level': 'DEBUG'
+        }
+    }
+}
+
 MAX_PAGES_PER_DOMAIN = 6 # maxim number of pages per domain to be fetched for parsing
 
 EXCLUDES = [ 'google.com', 'facebook.com', 'youtube.com', 'twitter.com', 'rsvp.com', 'doubleclick.net', 'ebay.com', 'chemspider.com' ]
@@ -15,6 +75,7 @@ RSS_EXCLUDES = [ 'comment', 'porn', 'chemspider' ]
 BAD_SUFIXES = ['.pdf', '.doc', '.docx', '.rtf', 
 '.mov', '.mp4', '.avi', '.wmv', '.wma', '.asf', '.qt', '.mkv', '.mpeg',
 '.mp3', 
+'.zip', '.rar', '.gzip',
 '.jpeg', '.jpg', '.bmp']
 
 BAD_PREFIXES = ['mailto:', 'javascript:', '#']

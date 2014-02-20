@@ -1,5 +1,5 @@
 import sys, traceback, getopt
-import logging
+import logging, logging.config
 from bs4 import BeautifulSoup, SoupStrainer 
 from urlparse import urlparse
 import requests, feedparser
@@ -158,7 +158,7 @@ def crawl_feeds(cnx):
 				# remove crawled link from todos
 				crawler_db.removeTodo(url, cursor, 'OK')
 		else:
-			log.warning('URL: ' + url + '  is not valid!')
+			#log.warning('URL: ' + url + '  is not valid!')
 			crawler_db.removeTodo(url, cursor, 'URL not valid')							
 	else: # no url availabel in TODO
 		log.warning('WARN: No URLs available in TODO list. Program will exit!')
@@ -205,16 +205,16 @@ if __name__ == "__main__":
 				ROOT_DB_CONFIG.pop('password')
 			else:
 				ROOT_DB_CONFIG['password'] = arg
-	#logging setup:  %(name)s => logger name, %(module)s => module name
-	# If you want each run to start afresh, not remembering the messages from earlier runs, you can specify the 'filemode' argument
-	if GLOBAL_CONFIG['log_to_file']:
-		logging.basicConfig(filename='crawler.log', filemode='w', level=logging.ERROR, format='%(asctime)s : %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-	else:
-		logging.basicConfig(level=logging.ERROR, format='%(asctime)s : %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+	
+	#check if we use default file configuration
+	if not GLOBAL_CONFIG['log_to_file']:
+		LOG_SETTINGS['loggers']['rss_crawler'] = { 'handlers':['console'], 'level':'DEBUG'}
+
+	# configure logging 	
+	logging.config.dictConfig(LOG_SETTINGS)
 
 	#get root logger and set DEBUG level as opposed to global ERROR level
 	log = logging.getLogger('rss_crawler')
-	log.setLevel(logging.DEBUG)
 
 	log.debug('START - Magic RSS Crawler (Alpha)')
 	
