@@ -2,6 +2,7 @@ import sys, traceback, getopt
 import logging, logging.config
 from bs4 import BeautifulSoup, SoupStrainer 
 from urlparse import urlparse
+from pprint import pprint
 import requests, feedparser
 import crawler_db
 from crawler_config import *
@@ -82,6 +83,32 @@ def validateRSS(theLink):
 		response['valid'] = False
 	return response
 
+############################
+#  get array of RSS links 
+############################
+def getRSSLinks(url, cursor):
+	rss_links = []
+	# make HTTP GET 
+	resp = requests.get(url, timeout=5) # give up if no response after 5 seconds
+
+	if (resp.status_code == 200) and ('html' in resp.headers['content-type']):
+
+		link_tag = SoupStrainer('link', {'type': 'application/rss+xml'})
+		rss_links = BeautifulSoup(resp.text, parse_only=link_tag)
+		if (len(rss_links) > 0):
+			log.info('	>> Found {} RSS links on page: {}'.format(len(rss_links), url))
+							 
+		a_tags = BeautifulSoup(resp.text, parse_only=SoupStrainer('a')) 
+		# add other links from this page in todo 	
+		for link in a_tags:
+			if link.has_attr('href'):
+				addToDoURL(link['href'], url, cursor)	
+	else:
+		reason = 'HTTP GET: ' + url + ' --> status_code: ' + str(resp.status_code) + " --> Content-Type:" + resp.headers['content-type']
+		crawler_db.removeTodo(url, cursor, reason)
+
+	return rss_links;	
+
 	
 #######################################
 # find RSS feeds  
@@ -98,23 +125,30 @@ def crawl_feeds(cnx):
 			log.info('<crawled={}, feeds={}, todo={}> -- Fetch URL: {}'.format(crawler_db.count('crawled', cursor), crawler_db.count('feeds', cursor), crawler_db.count('todo', cursor), url))
 			rss_links = []
 			
-			try:
-				resp = requests.get(url, timeout=5) # give up if no response after 5 seconds
-				if (resp.status_code == 200) and ('html' in resp.headers['content-type']):											
-						link_tag = SoupStrainer('link', {'type': 'application/rss+xml'})
-						rss_links = BeautifulSoup(resp.text, parse_only=link_tag)
-						if (len(rss_links) > 0):
-							log.info('	>> Found {} RSS links on page: {}'.format(len(rss_links), url))
-											 
-						a_tags = BeautifulSoup(resp.text, parse_only=SoupStrainer('a')) 
-						# add other links from this page in todo 	
-						for link in a_tags:
-							if link.has_attr('href'):
-								addToDoURL(link['href'], url, cursor)	
+			try:			
+				# requests follow redirects for all HTTP methods except HEAD !!!!	
+				resp = requests.head(url, allow_redirects=True, timeout=5) # give up if no response after 5 seconds
+				#pprint(resp.headers);
+
+				if 'content-type' in resp.headers:
+					if ('html' in resp.headers['content-type']):
+						rss_links = getRSSLinks(url, cursor)						
+					else:
+						reason = 'HTTP HEAD: ' + url + " --> WRONG Content-Type:" + resp.headers['content-type']
+						log.warning(reason)
+						crawler_db.removeTodo(url, cursor, reason)
+				elif 'content-length' in resp.headers:
+					if resp.headers['content-length'] <= MAX_CONTENT_LENGTH:
+						rss_links = getRSSLinks(url, cursor)
+					else:	
+						reason = 'HTTP HEAD: ' + url + " --> MAX_CONTENT_LENGTH exceeded -> Content-Length:" + resp.headers['content-length']
+						log.warning(reason)
+						crawler_db.removeTodo(url, cursor, reason)
 				else:
-					reason = 'HTTP GET: ' + url + ' --> status_code:' + str(resp.status_code) + " --> Content-Type:" + resp.headers['content-type']
+					reason = 'HTTP HEAD: ' + url + " --> MISSING content-type or content-legth"
 					log.error(reason)
-					crawler_db.removeTodo(url, cursor, reason)					
+					crawler_db.removeTodo(url, cursor, reason)
+													
 			except Exception, e:				
 				reason = '{0} --> Arguments: {1!r}'.format(type(e).__name__, e.args) # + str(e) + " --> from URL: "+ url						
 				log.error(reason, exc_info=True)  # traceback.print_exc(file=sys.stdout)

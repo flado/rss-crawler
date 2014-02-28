@@ -72,11 +72,15 @@ EXCLUDES = [ 'google.com', 'facebook.com', 'youtube.com', 'twitter.com', 'rsvp.c
 #exclude RSS URLs that contains the words in this list
 RSS_EXCLUDES = [ 'comment', 'porn', 'chemspider' ]
 
-BAD_SUFIXES = ['.pdf', '.doc', '.docx', '.rtf', 
-'.mov', '.mp4', '.avi', '.wmv', '.wma', '.asf', '.qt', '.mkv', '.mpeg',
-'.mp3', 
-'.zip', '.rar', '.gzip',
-'.jpeg', '.jpg', '.bmp']
+BAD_SUFIXES = [] # TODO: deprecate sufix based decision for an URL in favour of using HTTP HEAD before getting the HTML with HTTP GET
+
+MAX_CONTENT_LENGTH = 5242880 # bytes => 5MB
+
+#  ['.pdf', '.doc', '.docx', '.rtf', 
+# '.mov', '.mp4', '.avi', '.wmv', '.wma', '.asf', '.qt', '.mkv', '.mpeg',
+# '.mp3', 
+# '.zip', '.rar', '.gzip',
+# '.jpeg', '.jpg', '.bmp']
 
 BAD_PREFIXES = ['mailto:', 'javascript:', '#']
 
