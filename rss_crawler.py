@@ -6,7 +6,9 @@ from pprint import pprint
 import requests, feedparser
 import crawler_db
 from crawler_config import *
-	
+
+# python rss_crawler.py -p 1qaz2wsx --db crawlerdb -r -c -s http://www.iis.sinica.edu.tw/~scm/	
+
 ########################################
 # check if URL is valid and increase page_count / domain
 ########################################
@@ -94,13 +96,14 @@ def getRSSLinks(url, cursor):
 	if (resp.status_code == 200) and ('html' in resp.headers['content-type']):
 
 		link_tag = SoupStrainer('link', {'type': 'application/rss+xml'})
-		rss_links = BeautifulSoup(resp.text, parse_only=link_tag)
+		rss_links = BeautifulSoup(resp.text, parse_only=link_tag).find_all('link')
 		if (len(rss_links) > 0):
 			log.info('	>> Found {} RSS links on page: {}'.format(len(rss_links), url))
 							 
 		a_tags = BeautifulSoup(resp.text, parse_only=SoupStrainer('a')) 
+
 		# add other links from this page in todo 	
-		for link in a_tags:
+		for link in a_tags.find_all('a'):
 			if link.has_attr('href'):
 				addToDoURL(link['href'], url, cursor)	
 	else:
