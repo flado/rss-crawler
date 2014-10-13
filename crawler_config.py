@@ -88,7 +88,7 @@ BAD_PREFIXES = ['mailto:', 'javascript:', '#']
 # root database config
 ROOT_DB_CONFIG = { 
 	'user': 'root', 
-	'password': 'ZeroPII', 
+	#'password': 'ZeroPII', 
 	'host': '127.0.0.1', 
 	'raise_on_warnings': True
 }
