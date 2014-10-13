@@ -1,6 +1,6 @@
 # RSS Crawler #
 
-RSS Crawler implementation in Phyton and MySQL.
+RSS Crawler implementation in Python and MySQL.
 
 ### How do I get set up? ###
 
@@ -13,13 +13,13 @@ or download from:  https://bootstrap.pypa.io/get-pip.py ```  cd pip; python get-
     * https://pypi.python.org/pypi/feedparser
 
 4. MySQL database Configuration
-> crawler_config.py -> contains database configurations for ROOT (ROOT_DB_CONFIG) and CRAWLER_DB (CRAWLER_DB_CONFIG). Update configuration with your values.
+> crawler_config.py -> contains MySQL database configurations for root (ROOT_DB_CONFIG) and crawler database (CRAWLER_DB_CONFIG). You can update this configuration with your values.
 
 5. Start MySQL: ```mysqld```
->  remember to check the port in my.cnf and update ROOT_DB_CONFIG above
+>  remember to check the port in my.cnf and update ROOT_DB_CONFIG
 
 6. Configure proxy (if any)
-> If you're running this app under a proxy please remeber to configure the HTTP_PROXY amd HTTPS_PROXY env variables   
+> If you're running this app under a proxy please remember to configure the HTTP_PROXY and HTTPS_PROXY environment variables   
   ```
    export HTTP_PROXY="http://user:pass@10.10.1.10:3128/"
    export HTTPS_PROXY="http://user:pass@10.10.1.10:3128/"
@@ -40,7 +40,7 @@ or download from:  https://bootstrap.pypa.io/get-pip.py ```  cd pip; python get-
 
 ### Configuration guidelines ###
 
-The 'rss_crawler.py' script allows for multiple configurations that can be changed in 'crawler_config.py' file:
+The ```rss_crawler.py``` script allows for multiple configurations that can be changed in ```crawler_config.py``` file:
 
 | Name | Description |
 | ------------- | ----------- |
@@ -54,7 +54,7 @@ The 'rss_crawler.py' script allows for multiple configurations that can be chang
 | ROOT_DB_CONFIG | MySQL root user and password |
 | CRAWLER_DB_CONFIG | Crawler database: user configuration & database name |
 
-Have a look in 'crawler_config.py' for the default values!!
+Have a look in ```crawler_config.py``` for the default values!!
 
 
 ### Contribution guidelines ###
