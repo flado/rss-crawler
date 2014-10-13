@@ -24,21 +24,21 @@ An RSS Crawler implementation in Phyton and MySQL.
 	pip install requests
 	pip install feedparser
 ```
-4. MySQL database Configuration
+1. MySQL database Configuration
 ```
 	crawler_config.py -> contains database configurations for ROOT (ROOT_DB_CONFIG) and CRAWLER_DB (CRAWLER_DB_CONFIG). Update configuration with your values.
 ```
-5. Start MySQL
+1. Start MySQL
 ```
 	mysqld (remember to check the port in my.cnf and update ROOT_DB_CONFIG above)
 ```
-6. Configure proxy (if any)
+1. Configure proxy (if any)
 If you're running this app under a proxy please remeber to configure the HTTP_PROXY amd HTTPS_PROXY env variables
 ```
 	$ export HTTP_PROXY="http://user:pass@10.10.1.10:3128/"
 	$ export HTTPS_PROXY="http://user:pass@10.10.1.10:3128/"
 ```	
-7. Run 
+1. Run 
 ```
 	python rss_crawler.py --db crawler_database
 ```
