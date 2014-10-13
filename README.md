@@ -12,16 +12,15 @@ An RSS Crawler implementation in Phyton and MySQL.
 
 2. Install pip
 	* or download from:  https://bootstrap.pypa.io/get-pip.py
-
-	```
+```
 	cd pip
 	python get-pip.py
-	```
+```
+
 3. Install dependencies using pip:
 	* http://docs.python-requests.org/en/latest/
 	* https://pypi.python.org/pypi/beautifulsoup4
 	* https://pypi.python.org/pypi/feedparser
-
 ```
 	pip install beautifulsoup4
 	pip install requests
@@ -53,14 +52,11 @@ An RSS Crawler implementation in Phyton and MySQL.
 
 ### Configuration guidelines ###
 	* The script allows for multiple configurations that can be changed in crawler_config.py file:
-	
-| Name | Default values          |
-| ------------- | ----------- |
-| GLOBAL_CONFIG      | ```'start_urls' : ['http://www.yahoo.com', 'http://www.infoq.com'],
-	'drop_existing_database' : False,
-	'log_to_file' : True``` |
-| Close     | Closes a window    
 
+| Name | Properties          |
+| ------------- | ----------- |
+| GLOBAL_CONFIG      | 'start_urls', 'drop_existing_database', 'log_to_file' |
+| Close     | Closes a window    
 
 
 ### Contribution guidelines ###
