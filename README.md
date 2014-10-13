@@ -51,12 +51,22 @@ An RSS Crawler implementation in Phyton and MySQL.
 
 
 ### Configuration guidelines ###
-	* The script allows for multiple configurations that can be changed in crawler_config.py file:
 
-| Name | Properties          |
+The 'rss_crawler.py' script allows for multiple configurations that can be changed in 'crawler_config.py' file:
+
+| Name | Description |
 | ------------- | ----------- |
-| GLOBAL_CONFIG      | 'start_urls', 'drop_existing_database', 'log_to_file' |
-| Close     | Closes a window    
+| GLOBAL_CONFIG    | 'start_urls', 'drop_existing_database', 'log_to_file' |
+| LOG_SETTINGS     |  'formatters', 'handlers', 'loggers' |
+| MAX_PAGES_PER_DOMAIN | max number of pages to check in current domain |
+| EXCLUDES | domain names to exclude from crawling |
+| RSS_EXCLUDES | keywords that determine if the RSS will be excluded |
+| BAD_SUFIXES | deprecated |
+| MAX_CONTENT_LENGTH | max size in bytes for a page to be fetched |
+| ROOT_DB_CONFIG | MySQL root user and password |
+| CRAWLER_DB_CONFIG | Crawler database: user configuration & database name |
+
+Have a look in 'crawler_config.py' for the default values!!
 
 
 ### Contribution guidelines ###
