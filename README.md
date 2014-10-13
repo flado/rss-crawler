@@ -11,6 +11,8 @@ An RSS Crawler implementation in Phyton and MySQL.
 1. Install Python 2.7.x
 1. dfsf
 1. sdfdsfsf
+```cd dddd```
+
 Install pip
 ...or download from:  https://bootstrap.pypa.io/get-pip.py
 ```
