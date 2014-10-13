@@ -1,13 +1,8 @@
 # RSS Crawler #
 
-This README file documents whatever steps are necessary to get this application up and running.
-
-### What is this repository for? ###
-
-An RSS Crawler implementation in Phyton and MySQL.
+RSS Crawler implementation in Phyton and MySQL.
 
 ### How do I get set up? ###
-
 
 1. Install Python 2.7.x
 2. Install pip
@@ -68,7 +63,7 @@ Feel free to contribute to this repo.
 
 ### Who do I talk to? ###
 
-* Repo owner or admin ([flado](https://bitbucket.org/flado))
+* Repo owner or admin ([flado](https://github.com/flado))
 
 ## Licence
 Licensed under the permissive MIT license
