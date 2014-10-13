@@ -30,7 +30,18 @@ or download from:  https://bootstrap.pypa.io/get-pip.py ```  cd pip; python get-
    export HTTPS_PROXY="http://user:pass@10.10.1.10:3128/"
   ```
 
-7. Run: ```python rss_crawler.py --db crawler_database```
+7. Run:  ``` python rss_crawler.py --db crawler_database ```
+
+   The ```rss_crawler.py``` script accepts the following input parameters:
+
+| Name | Description |
+| --------------------- | ----------- |
+| -s, --start                                        | the start URL (overrides the defaults in GLOBAL_CONFIG.start_urls ) |
+| -d, --db    | the crawler database name (override database name in CRAWLER_DB_CONFIG) |
+| -r, --remove | drops and re-creates again the crawler database (by default, if database already exists, the crawled feeds are added to the existing database) |
+| -c, --console | print logs to the console (by default the LOG_SETTINGS prints to file) |
+| -p, --pwd | MYSQL root password ('none' for no password) |
+
 
 ### Configuration guidelines ###
 
