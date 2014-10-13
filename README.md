@@ -9,13 +9,13 @@ An RSS Crawler implementation in Phyton and MySQL.
 ### How do I get set up? ###
 
 1. Install Python 2.7.x
-2. Install pip
+1. Install pip
 ...or download from:  https://bootstrap.pypa.io/get-pip.py
 ```
 	cd pip
 	python get-pip.py
 ```
-3. Install dependencies using pip:
+1. Install dependencies using pip:
 	* http://docs.python-requests.org/en/latest/
 	* https://pypi.python.org/pypi/beautifulsoup4
 	* https://pypi.python.org/pypi/feedparser
